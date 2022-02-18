@@ -1,0 +1,22 @@
+
+# dependencies
+/src
+/web3-dapp/node_modules
+/web3-dapp/.pnp
+/web3-dapp/pnp.js
+
+# testing
+/web3-dapp/coverage
+
+# production
+/web3-dapp/build
+
+# misc
+/web3-dapp/.DS_Store
+/web3-dapp/.env.local
+/web3-dapp/.env.development.local
+/web3-dapp/.env.test.local
+/web3-dapp/.env.production.local
+/web3-dapp/npm-debug.log*
+/web3-dapp/yarn-debug.log*
+/web3-dapp/yarn-error.log*
