@@ -231,7 +231,8 @@
                 "type": "bool"
             }
         ],
-        "stateMutability": "nonpayable",
-        "type": "function"
+        "stateMutability": "payable",
+        "type": "function",
+        "payable": true
     }
 ]
