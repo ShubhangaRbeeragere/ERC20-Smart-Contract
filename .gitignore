@@ -1,6 +1,7 @@
 
 # dependencies
-/src
+/node
+/javascript
 /web3-dapp/node_modules
 /web3-dapp/.pnp
 /web3-dapp/pnp.js

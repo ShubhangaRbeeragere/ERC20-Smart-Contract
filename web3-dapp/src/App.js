@@ -1,24 +1,41 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Web3 from "web3";
 import ABI from "./abi.json";
+import Accounts from "./components/accountInfo/accounts";
+import List from "./components/utilities/list";
+import SelectAccount from "./components/utilities/selectAccount";
+
 function App() {
-    const [account, setAccount] = useState([]);
+    const [account, setAccount] = useState({ selected: "", options: [] });
+
+    useEffect(() => {
+        getAccounts();
+    }, []);
+
     let web3 = new Web3("HTTP://127.0.0.1:7545");
+    //initialize the smart contract
     let contract = new web3.eth.Contract(
         ABI,
-        "0xbf12Fe99cBdAeB022b294A2991a125f965CBAe3b"
+        "0xdB27fdb789E0E02f8D6050503d266C8d9B8Ed127"
     );
+
+    //get all the accounts in the smart contract
     let getAccounts = async () => {
-        let accounts = [];
+        let accountData = [];
         try {
-            accounts = await web3.eth.getAccounts();
-            setAccount(accounts);
+            accountData = await web3.eth.getAccounts();
+            setAccount({ ...account, options: accountData });
         } catch (err) {
             console.log(err);
         }
     };
-    getAccounts();
-    return <div className="App">{account}</div>;
+    return (
+        <div className="App">
+            {account && (
+                <SelectAccount account={account} setAccount={setAccount} />
+            )}
+        </div>
+    );
 }
 
 export default App;
