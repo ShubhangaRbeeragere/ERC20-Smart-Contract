@@ -1,0 +1,20 @@
+table {
+  border: 2px solid #480ca8;
+  border-radius: 5px;
+}
+
+table td {
+  margin: 5px;
+  border-bottom: 2px solid #480ca8;
+  border-radius: 2px;
+  padding-left: 5px;
+}
+
+table td:last-child {
+  border-left: 2px solid #480ca8;
+}
+
+table:last-child {
+  border-bottom: none;
+}
+/*# sourceMappingURL=balances.css.map */

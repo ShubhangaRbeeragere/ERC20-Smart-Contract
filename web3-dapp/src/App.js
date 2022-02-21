@@ -4,6 +4,7 @@ import Web3 from "web3";
 import ABI from "./abi.json";
 import SelectAccount from "./components/accountInfo/selectAccount";
 import AllBalance from "./components/balances/allBalance";
+import Error from "./components/errorHandlers/error";
 
 function App() {
     //for selecting 'from' account with options
@@ -13,6 +14,11 @@ function App() {
         balance: null,
     });
 
+    //name and symbol of the smart contract
+    const [identity, setIdentity] = useState({
+        name: "",
+        symbol: "",
+    });
     //for selecting 'to' account with options
     const [toAccount, setToAccount] = useState({
         selected: "",
@@ -25,12 +31,26 @@ function App() {
         balances: [],
     });
 
+    //for success/failure messages
+    const [message, setMessage] = useState({
+        data: "",
+        visibility: false,
+    });
+
     //initialize the smart contract
     let web3 = new Web3("HTTP://127.0.0.1:7546");
     let contract = new web3.eth.Contract(
         ABI,
-        "0xe13A661eabb2565274A3F04E61320BDcC741Db3B"
+        "0xD75ebB592029b5Df7E407013CF408F5C94208338"
     );
+    //get the name of the token
+    let getIdentity = async () => {
+        try {
+            let name = await contract.methods.name().call();
+            let symbol = await contract.methods.symbol().call();
+            setIdentity({ name: name, symbol: symbol });
+        } catch (err) {}
+    };
     //get all the accounts
     let getAccounts = async () => {
         let accountData = [];
@@ -48,6 +68,10 @@ function App() {
             });
         } catch (err) {
             console.log(err);
+            setMessage({
+                data: "error while getting accounts, getAccount",
+                visibility: true,
+            });
         }
     };
     //get the balance of the account
@@ -80,6 +104,10 @@ function App() {
             });
         } catch (err) {
             console.error(err);
+            setMessage({
+                data: "error while checking balance",
+                visibility: true,
+            });
         }
     };
     let transfer = (from, to, amount) => {
@@ -88,7 +116,12 @@ function App() {
             .send({ from: from, value: "1000" })
             .on("receipt", (data) => {
                 console.log(data);
+                setMessage({
+                    data: "transfer successful",
+                    visibility: true,
+                });
                 getAllBalance();
+                getBalance(account.selected);
             })
             .on("error", (err, receipt) => {
                 if (err) {
@@ -97,13 +130,22 @@ function App() {
                         err,
                         "\nerror--=====----"
                     );
-                } else console.error(receipt);
+                    setMessage({
+                        data: err.message,
+                        visibility: true,
+                    });
+                } else
+                    setMessage({
+                        data: receipt,
+                        visibility: true,
+                    });
             });
     };
     ///////////////////////////////////////////////////////////
     useEffect(() => {
         getAccounts();
         getAllBalance();
+        getIdentity();
     }, []);
 
     //this is for displaying table of accounts and balances
@@ -117,55 +159,75 @@ function App() {
 
     return (
         <div className="App">
-            <p>select Account:</p>
-            {account && (
-                <SelectAccount account={account} setAccount={setAccount} />
-            )}
+            <div className="identity">
+                <h3>
+                    Token Name: <span>{identity.name}</span>
+                </h3>
+                <h3>
+                    Token Symbol: <span>{identity.symbol}</span>
+                </h3>
+            </div>
+            <div className="title">
+                <h2>Fungible Token Example</h2>
+            </div>
+            <div className="fromAccount flex">
+                <h3>select Account:</h3>
+                {account && (
+                    <SelectAccount account={account} setAccount={setAccount} />
+                )}
+                <h3>balance:</h3>
+                {account.balance}
+            </div>
 
-            <p>balance:</p>
-            {account.balance}
+            <div className="toAccount flex">
+                <h3>select Account to send token:</h3>
+                {toAccount && (
+                    <>
+                        <SelectAccount
+                            account={toAccount}
+                            setAccount={setToAccount}
+                        />
+                        <input
+                            type="number"
+                            value={toAccount.amount}
+                            onChange={(e) => {
+                                e.target.value > 0
+                                    ? setToAccount({
+                                          ...toAccount,
+                                          amount: e.target.value,
+                                      })
+                                    : setToAccount({
+                                          ...toAccount,
+                                          amount: 0,
+                                      });
+                            }}
+                        />
+                        <button
+                            onClick={() => {
+                                transfer(
+                                    account.selected,
+                                    toAccount.selected,
+                                    toAccount.amount
+                                );
+                            }}
+                        >
+                            Send
+                        </button>
+                    </>
+                )}
+            </div>
 
-            <p>all Accounts</p>
-            <AllBalance
-                accounts={allAccounts.accounts}
-                balances={allAccounts.balances}
-            />
-
-            <p>select Account to send token:</p>
-            {toAccount && (
-                <>
-                    <SelectAccount
-                        account={toAccount}
-                        setAccount={setToAccount}
-                    />
-                    <input
-                        type="number"
-                        value={toAccount.amount}
-                        onChange={(e) => {
-                            e.target.value > 0
-                                ? setToAccount({
-                                      ...toAccount,
-                                      amount: e.target.value,
-                                  })
-                                : setToAccount({
-                                      ...toAccount,
-                                      amount: 0,
-                                  });
-                        }}
-                    />
-                    <button
-                        onClick={() => {
-                            transfer(
-                                account.selected,
-                                toAccount.selected,
-                                toAccount.amount
-                            );
-                        }}
-                    >
-                        Send
-                    </button>
-                </>
-            )}
+            <div className="allAccounts flex">
+                <h3>all Accounts</h3>
+                <AllBalance
+                    accounts={allAccounts.accounts}
+                    balances={allAccounts.balances}
+                />
+            </div>
+            <div className="message flex">
+                <h3>notifications</h3>
+                {message.visibility && <Error message={message.data} />}
+            </div>
         </div>
     );
 }

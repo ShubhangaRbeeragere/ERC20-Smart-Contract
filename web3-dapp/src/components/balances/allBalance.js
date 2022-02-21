@@ -1,5 +1,5 @@
 import React from "react";
-import "./style.css";
+import "./balances.css";
 
 function AllBalance({ accounts, balances }) {
     return (
